@@ -1,10 +1,13 @@
 # Changelog
 
-## v10 — publicación inicial
-- Texto de potencia y porcentaje con scroll independiente cuando no cabe.
-- Icono `lightningbolt` en una región independiente.
-- Barra de progreso con borde visible y altura interior configurable.
-- Alarma por sirena RTTTL o voz inglesa.
-- Umbrales de color, parpadeo opcional y modo de prueba.
-- Autor del blueprint: ML.
-- Se preparan cinco archivos de idioma: español, alemán, inglés, francés y portugués.
+## 1.0 — Initial release
+
+- Added localized Home Assistant blueprints in English, Spanish, German, French, and Portuguese.
+- Added independent scrolling for the power and percentage text.
+- Added the separately installed `lightningbolt` icon.
+- Added a progress bar with a visible border and configurable inner height.
+- Added configurable green, yellow, and red thresholds.
+- Added optional text blinking and an alarm selectable between an RTTTL siren and English speech.
+- Added test mode with simulated percentage values and alarm testing at 100%.
+- Added MQTT publishing on Home Assistant startup, sensor changes, and every five seconds.
+- Blueprint author: ML.

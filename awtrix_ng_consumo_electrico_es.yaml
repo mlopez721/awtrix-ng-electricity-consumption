@@ -1,0 +1,437 @@
+blueprint:
+  name: AWTRIX NG - Consumo eléctrico TC002 (icono animado)
+  description: >-
+    Aplicación persistente de consumo eléctrico para AWTRIX NG. Se publica al
+    arrancar Home Assistant, cuando cambian los sensores y periódicamente para
+    asegurar que la aplicación exista aunque los sensores no cambien. Incluye
+    modo de prueba y tres zonas de color. Incluye el icono animado lightningbolt instalado en el TC002.
+  domain: automation
+  author: ML
+
+  input:
+    device_filter:
+      name: Filtro de dispositivos
+      description: Elige si limitar la selección al fabricante Blueforcer o permitir todos los dispositivos MQTT.
+      default:
+        active_choice: Solo Blueforcer
+        Solo Blueforcer: {}
+        Todos los dispositivos MQTT: {}
+      selector:
+        choose:
+          choices:
+            Solo Blueforcer:
+              selector:
+                device:
+                  integration: mqtt
+                  manufacturer: Blueforcer
+                  multiple: false
+            Todos los dispositivos MQTT:
+              selector:
+                device:
+                  integration: mqtt
+                  multiple: false
+
+    power_entity:
+      name: Sensor de potencia (W)
+      description: Entidad numérica que mide la potencia eléctrica actual en vatios.
+      selector:
+        entity:
+          domain: sensor
+
+    percentage_entity:
+      name: Sensor de porcentaje de consumo
+      description: Entidad numérica que expresa el consumo como porcentaje del límite.
+      selector:
+        entity:
+          domain: sensor
+
+    test_mode:
+      name: Modo de prueba
+      description: >-
+        Actívalo para simular 0, 25, 50, 75 y 100 %, cambiando cada 5 segundos.
+        Al llegar al 100 % se prueba también el sonido si está activado.
+      default: false
+      selector:
+        boolean: {}
+
+    app_name:
+      name: Nombre de la aplicación
+      description: Nombre fijo de la aplicación persistente en la rotación de AWTRIX NG.
+      default: ha_consumo_electrico
+      selector:
+        text: {}
+
+    low_threshold:
+      name: Límite entre verde y amarillo (%)
+      default: 70
+      selector:
+        number:
+          min: 0
+          max: 100
+          step: 1
+          unit_of_measurement: "%"
+          mode: box
+
+    high_threshold:
+      name: Límite entre amarillo y rojo (%)
+      default: 90
+      selector:
+        number:
+          min: 0
+          max: 200
+          step: 1
+          unit_of_measurement: "%"
+          mode: box
+
+    bar_height:
+      name: Altura de la barra de progreso
+      description: >-
+        Altura en píxeles de la barra interior, sin contar el borde. La caja
+        exterior añade 1 px de borde arriba y abajo; la altura total será la
+        altura seleccionada más 2 px. Rango de 1 a 6 px.
+      default: 4
+      selector:
+        number:
+          min: 1
+          max: 6
+          step: 1
+          unit_of_measurement: px
+          mode: slider
+
+    low_color:
+      name: Color de la zona verde
+      default:
+        active_choice: Paleta RGB
+        Paleta RGB: [0, 200, 60]
+        Hexadecimal: "#00C83C"
+      selector:
+        choose:
+          choices:
+            Paleta RGB:
+              selector:
+                color_rgb: {}
+            Hexadecimal:
+              selector:
+                text: {}
+
+    medium_color:
+      name: Color de la zona amarilla
+      default:
+        active_choice: Paleta RGB
+        Paleta RGB: [255, 190, 0]
+        Hexadecimal: "#FFBE00"
+      selector:
+        choose:
+          choices:
+            Paleta RGB:
+              selector:
+                color_rgb: {}
+            Hexadecimal:
+              selector:
+                text: {}
+
+    high_color:
+      name: Color de la zona roja
+      default:
+        active_choice: Paleta RGB
+        Paleta RGB: [255, 30, 30]
+        Hexadecimal: "#FF1E1E"
+      selector:
+        choose:
+          choices:
+            Paleta RGB:
+              selector:
+                color_rgb: {}
+            Hexadecimal:
+              selector:
+                text: {}
+
+    blink_on_overload:
+      name: Parpadeo del texto al llegar al 100 %
+      default: true
+      selector:
+        boolean: {}
+
+    text_blink_ms:
+      name: Velocidad del parpadeo (ms)
+      default: 600
+      selector:
+        number:
+          min: 100
+          max: 5000
+          step: 100
+          unit_of_measurement: ms
+          mode: slider
+
+    sound_alert_enabled:
+      name: Activar alarma al cruzar el 100 %
+      description: Activa la alarma al pasar de menos del 100 % a un 100 % o más, o al llegar al 100 % en el modo de prueba.
+      default: true
+      selector:
+        boolean: {}
+
+    alert_mode:
+      name: Tipo de alarma
+      description: >-
+        Elige sirena o voz en inglés. AWTRIX NG sustituye una alerta que ya
+        está sonando por la siguiente, por eso se selecciona un único tipo.
+      default: siren
+      selector:
+        select:
+          options:
+            - label: Sirena (RTTTL)
+              value: siren
+            - label: Voz (inglés)
+              value: speech
+          mode: dropdown
+
+    speech_alert_text:
+      name: Texto que leerá la voz (inglés)
+      description: >-
+        Frase en inglés de hasta 512 bytes. Se leerá al activarse la alarma
+        si el tipo seleccionado es Voz (inglés).
+      default: "Warning. Electricity consumption has exceeded the limit."
+      selector:
+        text: {}
+
+    sound_rtttl:
+      name: Melodía de alerta (RTTTL)
+      description: >-
+        Melodía enviada directamente al TC002; no requiere un archivo de sonido instalado.
+        Se utiliza cuando el tipo de alarma seleccionado es Sirena (RTTTL).
+      default: "siren:d=8,o=6,b=180:a,e,a,e,a,e,a,e"
+      selector:
+        text: {}
+
+mode: restart
+max_exceeded: silent
+
+triggers:
+  - trigger: state
+    entity_id: !input power_entity
+    id: sensor_update
+  - trigger: state
+    entity_id: !input percentage_entity
+    id: sensor_update
+  - trigger: homeassistant
+    event: start
+    id: startup
+  - trigger: time_pattern
+    seconds: "/5"
+    id: periodic
+
+actions:
+  - variables:
+      device_filter_choice: !input device_filter
+      power_entity_value: !input power_entity
+      percentage_entity_value: !input percentage_entity
+      test_mode_value: !input test_mode
+      app_name_value: !input app_name
+      low_threshold_value: !input low_threshold
+      high_threshold_value: !input high_threshold
+      bar_height_value: !input bar_height
+      low_color_choice: !input low_color
+      medium_color_choice: !input medium_color
+      high_color_choice: !input high_color
+      blink_enabled: !input blink_on_overload
+      blink_ms_value: !input text_blink_ms
+      sound_enabled: !input sound_alert_enabled
+      alert_mode_value: !input alert_mode
+      speech_alert_text_value: !input speech_alert_text
+      sound_rtttl_value: !input sound_rtttl
+
+  - condition: template
+    value_template: >-
+      {{ (test_mode_value and trigger.id in ['periodic', 'startup'])
+         or (not test_mode_value and trigger.id in ['sensor_update', 'startup', 'periodic']) }}
+
+  - variables:
+      awtrix_device_value: >-
+        {% if device_filter_choice.active_choice == 'Solo Blueforcer' %}
+          {{ device_filter_choice['Solo Blueforcer'] }}
+        {% else %}
+          {{ device_filter_choice['Todos los dispositivos MQTT'] }}
+        {% endif %}
+      mqtt_prefix: >-
+        {% set entities = device_entities(awtrix_device_value)
+          | select('search', 'mqtt_prefix') | list %}
+        {{ states(entities[0]) if entities else 'unknown' }}
+      test_phase: "{{ ((as_timestamp(now()) // 5) | int) % 5 }}"
+      effective_power: >-
+        {% if test_mode_value %}
+          {{ (test_phase | int) * 750 }}
+        {% elif is_number(states(power_entity_value)) %}
+          {{ states(power_entity_value) | float(0) | round(0) | int }}
+        {% else %}
+          none
+        {% endif %}
+      effective_percentage: >-
+        {% if test_mode_value %}
+          {{ (test_phase | int) * 25 }}
+        {% elif is_number(states(percentage_entity_value)) %}
+          {{ states(percentage_entity_value) | float(0) }}
+        {% else %}
+          none
+        {% endif %}
+      power_display: >-
+        {% if effective_power is not none %}
+          {{ effective_power | int }}W
+        {% else %}
+          --W
+        {% endif %}
+      percentage_display: >-
+        {% if effective_percentage is not none %}
+          {{ ('%.1f' | format(effective_percentage | float(0))) | replace('.', ',') }}%
+        {% else %}
+          --%
+        {% endif %}
+      progress_value: >-
+        {% if effective_percentage is not none %}
+          {{ [100, [0, (effective_percentage | float(0))] | max] | min | round(0) | int }}
+        {% else %}
+          0
+        {% endif %}
+      low_color_hex: >-
+        {% set choice = low_color_choice %}
+        {% if choice.active_choice == 'Paleta RGB' %}
+          {% set rgb = choice['Paleta RGB'] %}
+          {{ '#%02X%02X%02X' | format(rgb[0] | int, rgb[1] | int, rgb[2] | int) }}
+        {% else %}
+          {{ choice['Hexadecimal'] }}
+        {% endif %}
+      medium_color_hex: >-
+        {% set choice = medium_color_choice %}
+        {% if choice.active_choice == 'Paleta RGB' %}
+          {% set rgb = choice['Paleta RGB'] %}
+          {{ '#%02X%02X%02X' | format(rgb[0] | int, rgb[1] | int, rgb[2] | int) }}
+        {% else %}
+          {{ choice['Hexadecimal'] }}
+        {% endif %}
+      high_color_hex: >-
+        {% set choice = high_color_choice %}
+        {% if choice.active_choice == 'Paleta RGB' %}
+          {% set rgb = choice['Paleta RGB'] %}
+          {{ '#%02X%02X%02X' | format(rgb[0] | int, rgb[1] | int, rgb[2] | int) }}
+        {% else %}
+          {{ choice['Hexadecimal'] }}
+        {% endif %}
+      progress_color: >-
+        {% set p = effective_percentage | float(0) %}
+        {% if p <= low_threshold_value | float(70) %}
+          {{ low_color_hex }}
+        {% elif p <= high_threshold_value | float(90) %}
+          {{ medium_color_hex }}
+        {% else %}
+          {{ high_color_hex }}
+        {% endif %}
+      overload_blink: >-
+        {{ blink_enabled and effective_percentage is not none
+           and (effective_percentage | float(0) >= 100) }}
+      safe_app_name: >-
+        {{ app_name_value | lower | regex_replace('[^a-z0-9_-]', '_') | truncate(32, true, '') }}
+
+  - condition: template
+    value_template: >-
+      {{ mqtt_prefix not in ['unknown', 'unavailable', 'none', ''] }}
+
+  - action: mqtt.publish
+    data:
+      topic: "{{ mqtt_prefix }}/cmd/apps/pushed/{{ safe_app_name }}"
+      qos: 0
+      retain: false
+      payload: >-
+        {% set blink = (blink_ms_value | int(600)) if overload_blink else 0 %}
+        {{ {
+          "layout": {
+            "version": 1,
+            "backgroundColor": "#000000",
+            "regions": [
+              {
+                "id": "icon_lightningbolt",
+                "box": [0, 0, 8, 14 - (bar_height_value | int(4))],
+                "icon": "lightningbolt",
+                "align": "center",
+                "valign": "center"
+              },
+              {
+                "id": "power",
+                "box": [9, 0, 20, 14 - (bar_height_value | int(4))],
+                "text": power_display | trim,
+                "color": "#FFFFFF",
+                "align": "center",
+                "valign": "center",
+                "scroll": {
+                  "mode": "loop",
+                  "direction": "left",
+                  "whenFits": "static",
+                  "speed": 70,
+                  "gap": 4,
+                  "holdMs": 700
+                },
+                "textBlinkMs": blink
+              },
+              {
+                "id": "percentage",
+                "box": [30, 0, 22, 14 - (bar_height_value | int(4))],
+                "text": percentage_display | trim,
+                "color": progress_color,
+                "align": "center",
+                "valign": "center",
+                "scroll": {
+                  "mode": "loop",
+                  "direction": "left",
+                  "whenFits": "static",
+                  "speed": 70,
+                  "gap": 4,
+                  "holdMs": 700
+                },
+                "textBlinkMs": blink
+              },
+              {
+                "id": "progress_border",
+                "box": [0, 14 - (bar_height_value | int(4)), 52, (bar_height_value | int(4)) + 2],
+                "draw": [["rect", 0, 0, 52, (bar_height_value | int(4)) + 2, "#A0A0A0"]]
+              },
+              {
+                "id": "progress",
+                "box": [
+                  1,
+                  15 - (bar_height_value | int(4)),
+                  50,
+                  bar_height_value | int(4)
+                ],
+                "progress": progress_value | int(0),
+                "color": progress_color,
+                "trackColor": "#202020"
+              }
+            ]
+          }
+        } | to_json }}
+
+  # Modo real: suena solo al cruzar desde menos del 100 % hasta el 100 % o más.
+  # Modo de prueba: reproduce el sonido al llegar al paso simulado del 100 %.
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: >-
+              {{ sound_enabled and (
+                   (test_mode_value and trigger.id == 'periodic'
+                    and (test_phase | int) == 4)
+                   or
+                   (not test_mode_value and trigger.id == 'sensor_update'
+                    and trigger.entity_id == percentage_entity_value
+                    and trigger.from_state is not none
+                    and trigger.to_state is not none
+                    and is_number(trigger.from_state.state)
+                    and is_number(trigger.to_state.state)
+                    and (trigger.from_state.state | float(0) < 100)
+                    and (trigger.to_state.state | float(0) >= 100))
+                 ) }}
+        sequence:
+          - action: mqtt.publish
+            data:
+              topic: "{{ mqtt_prefix }}/cmd/audio/play"
+              qos: 0
+              retain: false
+              payload: >-
+                {%- if alert_mode_value == 'speech' -%}{{ {'speech': speech_alert_text_value | trim} | to_json }}{%- else -%}{{ {'rtttl': sound_rtttl_value} | to_json }}{%- endif -%}

@@ -5,13 +5,17 @@
 
 A Home Assistant automation blueprint for the Ulanzi TC002 running AWTRIX NG, communicating over MQTT. The repository provides five localized blueprint files; this README and the changelog are maintained in English.
 
-## Available blueprints
+## Available blueprints and one-click import
 
-- `awtrix_ng_electricity_consumption_en.yaml` — English
-- `awtrix_ng_consumo_electrico_es.yaml` — Spanish
-- `awtrix_ng_stromverbrauch_de.yaml` — German
-- `awtrix_ng_consommation_electrique_fr.yaml` — French
-- `awtrix_ng_consumo_eletrico_pt.yaml` — Portuguese
+Choose your language and select **Import** to open the Home Assistant blueprint import page. Review the blueprint and confirm the import in Home Assistant.
+
+| Language | YAML file | Import |
+|---|---|---|
+| English | [`awtrix_ng_electricity_consumption_en.yaml`](https://github.com/mlopez721/awtrix-ng-electricity-consumption/blob/main/awtrix_ng_electricity_consumption_en.yaml) | [Import English blueprint](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fraw.githubusercontent.com%2Fmlopez721%2Fawtrix-ng-electricity-consumption%2Fmain%2Fawtrix_ng_electricity_consumption_en.yaml) |
+| Spanish | [`awtrix_ng_consumo_electrico_es.yaml`](https://github.com/mlopez721/awtrix-ng-electricity-consumption/blob/main/awtrix_ng_consumo_electrico_es.yaml) | [Import Spanish blueprint](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fraw.githubusercontent.com%2Fmlopez721%2Fawtrix-ng-electricity-consumption%2Fmain%2Fawtrix_ng_consumo_electrico_es.yaml) |
+| German | [`awtrix_ng_stromverbrauch_de.yaml`](https://github.com/mlopez721/awtrix-ng-electricity-consumption/blob/main/awtrix_ng_stromverbrauch_de.yaml) | [Import German blueprint](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fraw.githubusercontent.com%2Fmlopez721%2Fawtrix-ng-electricity-consumption%2Fmain%2Fawtrix_ng_stromverbrauch_de.yaml) |
+| French | [`awtrix_ng_consommation_electrique_fr.yaml`](https://github.com/mlopez721/awtrix-ng-electricity-consumption/blob/main/awtrix_ng_consommation_electrique_fr.yaml) | [Import French blueprint](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fraw.githubusercontent.com%2Fmlopez721%2Fawtrix-ng-electricity-consumption%2Fmain%2Fawtrix_ng_consommation_electrique_fr.yaml) |
+| Portuguese | [`awtrix_ng_consumo_eletrico_pt.yaml`](https://github.com/mlopez721/awtrix-ng-electricity-consumption/blob/main/awtrix_ng_consumo_eletrico_pt.yaml) | [Import Portuguese blueprint](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fraw.githubusercontent.com%2Fmlopez721%2Fawtrix-ng-electricity-consumption%2Fmain%2Fawtrix_ng_consumo_eletrico_pt.yaml) |
 
 All five files are intended to provide the same functionality, with blueprint names, descriptions, and interface options localized. The spoken alarm remains in English, as that is the voice tested with AWTRIX NG.
 
@@ -36,8 +40,8 @@ All five files are intended to provide the same functionality, with blueprint na
 
 ## Installation
 
-1. Download the YAML file for your preferred language.
-2. In Home Assistant, open **Settings → Automations & scenes → Blueprints → Import Blueprint** and import the **raw URL** of the selected YAML file from this repository.
+1. Use the language-specific **Import** link in the table above. Alternatively, open **Settings → Automations & scenes → Blueprints → Import Blueprint** and paste the raw URL of the selected YAML file.
+2. Review and confirm the import in Home Assistant.
 3. Create an automation from the imported blueprint and select the AWTRIX device and the two sensor entities.
 4. If the icon is not already installed, open the AWTRIX NG web interface, go to **Icons → Add**, search for `lightningbolt` in AWTRIX Hub, and send it to AWTRIX. Confirm that its installed ID is exactly `lightningbolt` (without `.gif`).
 5. Run test mode first and check the display and alarm before enabling normal operation.

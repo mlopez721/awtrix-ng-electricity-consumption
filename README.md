@@ -19,6 +19,28 @@ Choose your language and select **Import** to open the Home Assistant blueprint 
 
 All five files are intended to provide the same functionality, with blueprint names, descriptions, and interface options localized. The spoken alarm remains in English, as that is the voice tested with AWTRIX NG.
 
+## Demonstrations
+
+The following animated GIFs show the blueprint running on a Ulanzi TC002 with AWTRIX NG.
+
+### Normal operation
+
+The display during normal operation, showing the current readings and progress bar.
+
+![Normal operation on the Ulanzi TC002](images/normal-operation.gif)
+
+### Test mode: 0% to 50%
+
+Test mode simulating consumption levels from 0% to 50%.
+
+![Test mode from 0% to 50%](images/test-00-to-50-percent.gif)
+
+### Test mode: 75% to 100% with alert
+
+Test mode simulating consumption from 75% to 100%, including the configured alert at the threshold.
+
+![Test mode from 75% to 100%, including the alert](images/test-75-to-100-percent-alert.gif)
+
 ## Features
 
 - Displays current power and consumption percentage, with independent horizontal scrolling when either text does not fit.
